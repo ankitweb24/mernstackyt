@@ -18,37 +18,63 @@ router.get('/contact', (req, res) => {
   res.send('this is the contact page');
 });
 
-router.post('/signup', async (req, res) => {
-  const {username, email, phone, password, cpassword } = req.body;
+router.post("/signup", async (req, res) => {
+  const { username, email, phone, password, cpassword } = req.body;
 
-const passwordHash = await bcrypt.hash(password, saltRound);
-
-
-
-  if (!username || !email || !phone || !password || !cpassword) {
-    return res.json({ error: 'Please fill all field' });
+  if ((!username, !email, !phone, !password, !cpassword)) {
+    return res.json({ error: "plz fill fields" });
   }
 
   try {
-    const emailExists = await userCollection.findOne({ email : email});
-
-    if (emailExists) {
-      return res.json({ error: 'Email already exists' });
+    const hashedPassword = await bcrypt.hash(password, saltRound);
+    const userExit = await userCollection.findOne({ email: email });
+    if (userExit) {
+      return res.json({ error: "email already exits" });
     } else if (password !== cpassword) {
-      return res.json({ error: 'Passwords do not match' });
+      return res.json({ error: "password are not matching" });
     } else {
-      const data = new userCollection({username, email, phone, password :  passwordHash, cpassword :  passwordHash });
-
-      const userData = await data.save();
+      const user = new userCollection({
+        username,
+        email,
+        phone,
+        password: hashedPassword,
+        cpassword: hashedPassword,
+      });
+      const userData = await user.save();
 
       if (userData) {
-        return res.json({ message: 'Data saved' });
+        res.status(201).json({ message: "data saved" });
       }
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: 'Server error' });
   }
 });
+
+
+
+router.post('/login', async (req,res)=>{
+  console.log(req.body);
+
+  const {email, password} = req.body;
+
+  if(!email || !password){
+    res.json({error : "plz fill fields"})
+  }
+  const loginData = await userCollection.findOne({email : email});
+
+  if(loginData){
+    const passwordMatch= await bcrypt.compare(password,loginData.password);
+
+    if(passwordMatch){
+      res.json({message : "login success"})
+    }else{
+      res.json({message : "invalid password"})
+    }
+
+  }else{
+    res.json({error : "invalid email"})
+  }
+})
 
 module.exports = router;
