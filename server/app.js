@@ -1,16 +1,19 @@
 const express = require('express');
 const app = express();
-require('./db/config')
+const cors = require('cors');
+require('./db/config');
+
+const usercollection = require('./model/userSchema');
 const port = 8000;
-app.get('/', (req,res) =>{
-    res.send('hello world')
-})
-app.get('/about', (req,res) =>{
-    res.send('this is about page')
-})
-app.get('/contact', (req,res) =>{
-    res.send('this is contact page')
-})
+
+app.use(express.json())
+
+app.use(cors())
+
+
+app.use(require('./route/router'))
+
+
 app.listen(port, () =>{
     console.log(`server is running at port ${port}`);
 })
