@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const userCollection = require('../model/userSchema');
 const bcrypt = require('bcryptjs');
-
+const jwt = require('jsonwebtoken');
+const secret_key = "hkfkhgk649fkfk3949dfkddkrtttef";
 
 const saltRound = 12;
 
@@ -67,6 +68,26 @@ router.post('/login', async (req,res)=>{
     const passwordMatch= await bcrypt.compare(password,loginData.password);
 
     if(passwordMatch){
+
+      const payload = {
+        user: {
+          id : loginData._id,
+          email : loginData.email
+        },
+      }
+
+     jwt.sign(payload, secret_key, {expiresIn : "1h"}, (err, token) =>{
+     if(err){
+      console.log(err);
+     }
+
+     loginData.token= token;
+     loginData.save();
+
+     console.log(token);
+     } )
+
+
       res.json({message : "login success"})
     }else{
       res.json({message : "invalid password"})
